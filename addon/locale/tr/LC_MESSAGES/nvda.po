@@ -1,0 +1,94 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2026-05-02 12:03+0300\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: tr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.9\n"
+"X-Poedit-Basepath: ../../../..\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPathExcluded-0: .\n"
+
+#: addon/globalPlugins/setDescriptionDelay.py:39
+msgid "OK"
+msgstr "Tamam"
+
+#: addon/globalPlugins/setDescriptionDelay.py:80
+msgid "Add-on Conflict Warning"
+msgstr "Eklenti Çakışma Uyarısı"
+
+#: addon/globalPlugins/setDescriptionDelay.py:84
+#, python-brace-format
+msgid ""
+"The add-on '{conflicting}' is also installed.\n"
+"\n"
+"Both '{conflicting}' and 'setDescriptionDelay' modify the same internal "
+"speech functions, which can cause unpredictable behaviour such as doubled "
+"speech, missed character descriptions, or crashes.\n"
+"\n"
+"Please remove one of these add-ons to avoid conflicts."
+msgstr ""
+"Çakışan '{conflicting}' eklentisi de kurulu.\n"
+"\n"
+"'{conflicting}' ve 'setDescriptionDelay' eklentileri aynı dahili konuşma "
+"işlevlerine müdahale ediyor; bu durum çift konuşma, kaçırılan karakter "
+"açıklamaları veya çökmeler gibi öngörülemeyen davranışlara neden olabilir.\n"
+"\n"
+"Çakışmaları önlemek için lütfen bu eklentilerden birini kaldırın."
+
+#: addon/globalPlugins/setDescriptionDelay.py:94
+#, python-brace-format
+msgid ""
+"Warning: the add-on {conflicting} is also installed and conflicts with "
+"setDescriptionDelay. Please remove one of them."
+msgstr ""
+"Uyarı: {conflicting} eklentisi de yüklü ve setDescriptionDelay ile "
+"çakışıyor. Lütfen bunlardan birini kaldırın."
+
+#: addon/globalPlugins/setDescriptionDelay.py:219
+msgid "Description delay (ms, 0=instant):"
+msgstr "Açıklama gecikmesi (ms, 0=anında):"
+
+#: addon/globalPlugins/setDescriptionDelay.py:226
+msgid ""
+"Number of milliseconds to wait before announcing the character description. "
+"Set to 0 to announce the description immediately instead of the character."
+msgstr ""
+"Karakter açıklamasının kaç milisaniye sonra seslendirilceğini belirler. 0 "
+"girilirse karakter yerine açıklama anında seslendirilir."
+
+#: buildVars.py:14
+msgid "Set Character Description Delay"
+msgstr "Karakter Açıklama Gecikmesini Ayarla"
+
+#: buildVars.py:18
+msgid ""
+"This add-on improves NVDA's delayed character description feature:\n"
+"\tAllows you to configure the announcement delay in milliseconds, offering "
+"more flexibility than the built-in option.\n"
+"\tWhen the delay is set to 0, the character description is announced "
+"immediately instead of the character itself.\n"
+"\tThe add-on is controlled entirely through NVDA's existing \"Delayed "
+"descriptions for characters on cursor movement\" checkbox in Voice settings."
+msgstr ""
+"Bu eklenti, NVDA'nın gecikmeli karakter açıklaması özelliğini geliştirir:\n"
+"\\tYerleşik seçeneğe göre daha fazla esneklik sunarak duyuru gecikmesini "
+"milisaniye cinsinden yapılandırmanıza olanak tanır.\n"
+"\\tGecikme 0' olarak  ayarlandığında, karakterin kendisi yerine hemen "
+"karakter açıklaması duyurulur.\n"
+"\\tEklenti tamamen NVDA'nın konuşma ayarlarındaki mevcut \"İmleç hareket  "
+"ettiğinde imlecin üzerinde bulunan karakteri gecikmeli olarak açıkla\" onay "
+"kutusu aracılığıyla kontrol edilir."
+
+#: buildVars.py:28
+msgid ""
+"\n"
+"Initial release.\n"
+msgstr ""
+"\n"
+"İlk sürüm.\n"
