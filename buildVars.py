@@ -21,12 +21,12 @@ addon_info = AddonInfo(
 	The add-on is controlled entirely through NVDA's existing \"Delayed descriptions for characters on cursor movement" checkbox in Voice settings."""),
 	
 	# version
-	addon_version="2026.1.0",
+	addon_version="2026.1.1",
 	
 	# Brief changelog for this version
 	# Translators: what's new content for the add-on version
 	addon_changelog=_("""
-Initial release.
+Fixed: Character descriptions no longer bleed into subsequent speech after switching away from character-by-character navigation. Previously, if you moved to a different object or application while a description was pending, the description would still be announced after the new object's name. This happened because NVDA cancels speech internally via SpeechManager.cancel() rather than speech.cancelSpeech() during focus and object navigation events, bypassing the add-on's timer cancellation entirely. The fix patches SpeechManager.cancel() directly and adds a generation counter so that any callback already queued in the wx event loop when cancellation occurs is silently discarded.
 """),
 	
 	# Author(s)

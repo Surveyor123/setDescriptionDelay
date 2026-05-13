@@ -1,11 +1,20 @@
 # -*- coding: UTF-8 -*-
-import addonHandler, config, core, globalPluginHandler, speech, textInfos, types, ui, wx
+import addonHandler, config, core, globalPluginHandler, speech, speech.manager, textInfos, types, ui, wx
 from gui import settingsDialogs
 from logHandler import log
 
 addonHandler.initTranslation()
 
 characterDescriptionTimer = None
+# Suppress timer cancellation during calls to speak() and speakSpelling()
+# that originate from within speakTextInfo itself, so they do not
+# inadvertently cancel the timer we are about to set.
+_suppressCancelInSpeak = False
+# Incremented each time a new timer is scheduled or cancelled.
+# speakDelayedDescription compares its own snapshot of this value against
+# the current one and silently returns if they differ, making any callback
+# that was already queued in the wx event loop a no-op.
+_timerGeneration = 0
 
 confspec = {
     "delay": "integer(default=1000)",
@@ -109,7 +118,8 @@ def getDelay():
 
 
 def cancelTimer():
-    global characterDescriptionTimer
+    global characterDescriptionTimer, _timerGeneration
+    _timerGeneration += 1  # invalidate any callback already queued in the wx event loop
     if characterDescriptionTimer and characterDescriptionTimer.IsRunning():
         characterDescriptionTimer.Stop()
         characterDescriptionTimer = None
@@ -118,16 +128,29 @@ def cancelTimer():
 origSpeak = speech.speak
 def speak(*args, **kwargs):
     origSpeak(*args, **kwargs)
-    cancelTimer()
+    if not _suppressCancelInSpeak:
+        cancelTimer()
 
 origSpeakSpelling = speech.speakSpelling
 def speakSpelling(*args, **kwargs):
     origSpeakSpelling(*args, **kwargs)
-    cancelTimer()
+    if not _suppressCancelInSpeak:
+        cancelTimer()
 
 origCancelSpeech = speech.cancelSpeech
 def cancelSpeech():
     origCancelSpeech()
+    cancelTimer()
+
+
+# speech.cancelSpeech() is not always called; for focus changes and object
+# navigation NVDA cancels speech directly via SpeechManager.cancel(), bypassing
+# our cancelSpeech patch entirely. Patching the method on the class ensures
+# the pending description timer is cancelled through every code path.
+_origSpeechManagerCancel = None
+
+def _patchedSpeechManagerCancel(self):
+    _origSpeechManagerCancel(self)
     cancelTimer()
 
 
@@ -145,7 +168,7 @@ origSpeakTextInfo = speech.speakTextInfo
 
 
 def speakTextInfo(*args, **kwargs):
-    global characterDescriptionTimer
+    global characterDescriptionTimer, _suppressCancelInSpeak, _timerGeneration
     info = args[0]
     if (
         config.conf['speech']['delayedCharacterDescriptions']
@@ -157,20 +180,32 @@ def speakTextInfo(*args, **kwargs):
             results = speech.getCharDescListFromText(fakeInfo.text, locale=speech.getCurrentLanguage())
             description = results[0][1] if results else None
             if description:
-                speakDelayedDescription(fakeInfo)
+                _timerGeneration += 1
+                speakDelayedDescription(fakeInfo, _timerGeneration)
                 return
             config.conf['speech']['delayedCharacterDescriptions'] = False
-            tmp = origSpeakTextInfo(*args, **kwargs)
+            _suppressCancelInSpeak = True
+            try:
+                tmp = origSpeakTextInfo(*args, **kwargs)
+            finally:
+                _suppressCancelInSpeak = False
             config.conf['speech']['delayedCharacterDescriptions'] = True
             return tmp
         config.conf['speech']['delayedCharacterDescriptions'] = False
-        tmp = origSpeakTextInfo(*args, **kwargs)
+        _suppressCancelInSpeak = True
+        try:
+            tmp = origSpeakTextInfo(*args, **kwargs)
+        finally:
+            _suppressCancelInSpeak = False
         config.conf['speech']['delayedCharacterDescriptions'] = True
         cancelTimer()
+        _timerGeneration += 1
+        generation = _timerGeneration
         characterDescriptionTimer = core.callLater(
             delay,
             speakDelayedDescription,
-            _FakeTextInfo(info)
+            _FakeTextInfo(info),
+            generation,
         )
         return tmp
     # Any non-character read (line, word, sentence, etc.) should cancel a
@@ -179,7 +214,12 @@ def speakTextInfo(*args, **kwargs):
     return origSpeakTextInfo(*args, **kwargs)
 
 
-def speakDelayedDescription(info: _FakeTextInfo):
+def speakDelayedDescription(info: _FakeTextInfo, generation: int = -1):
+    # Guard against stale callbacks that were already queued in the wx event
+    # loop when the timer was cancelled (e.g. due to object navigation or a
+    # focus change): if the generation counter has moved on, do nothing.
+    if generation != -1 and generation != _timerGeneration:
+        return
     if info.text.strip() == "":
         return
     curLang = speech.getCurrentLanguage()
@@ -274,6 +314,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
     def __init__(self):
         super(GlobalPlugin, self).__init__()
         self._patchVoicePanel()
+        self._patchSpeechManagerCancel()
         speech.speakTextInfo = speakTextInfo
         speech.speak = speak
         speech.speakSpelling = speakSpelling
@@ -288,12 +329,21 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
             _origVoiceMakeSettings = settingsDialogs.VoiceSettingsPanel.makeSettings
             settingsDialogs.VoiceSettingsPanel.makeSettings = _patchedVoiceMakeSettings
 
+    def _patchSpeechManagerCancel(self):
+        global _origSpeechManagerCancel
+        if _origSpeechManagerCancel is None:
+            _origSpeechManagerCancel = speech.manager.SpeechManager.cancel
+            speech.manager.SpeechManager.cancel = _patchedSpeechManagerCancel
+
     def terminate(self):
-        global _origVoiceMakeSettings
+        global _origVoiceMakeSettings, _origSpeechManagerCancel
         speech.speakTextInfo = origSpeakTextInfo
         speech.speak = origSpeak
         speech.speakSpelling = origSpeakSpelling
         speech.cancelSpeech = origCancelSpeech
+        if _origSpeechManagerCancel is not None:
+            speech.manager.SpeechManager.cancel = _origSpeechManagerCancel
+            _origSpeechManagerCancel = None
         if _origVoiceMakeSettings is not None:
             settingsDialogs.VoiceSettingsPanel.makeSettings = _origVoiceMakeSettings
             _origVoiceMakeSettings = None

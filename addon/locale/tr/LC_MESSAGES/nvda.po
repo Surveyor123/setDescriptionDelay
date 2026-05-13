@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2026-05-02 12:03+0300\n"
+"POT-Creation-Date: 2026-05-13 10:14+0300\n"
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -14,15 +14,15 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPathExcluded-0: .\n"
 
-#: addon/globalPlugins/setDescriptionDelay.py:39
+#: addon/globalPlugins/setDescriptionDelay.py:48
 msgid "OK"
 msgstr "Tamam"
 
-#: addon/globalPlugins/setDescriptionDelay.py:80
+#: addon/globalPlugins/setDescriptionDelay.py:89
 msgid "Add-on Conflict Warning"
 msgstr "Eklenti Çakışma Uyarısı"
 
-#: addon/globalPlugins/setDescriptionDelay.py:84
+#: addon/globalPlugins/setDescriptionDelay.py:93
 #, python-brace-format
 msgid ""
 "The add-on '{conflicting}' is also installed.\n"
@@ -41,7 +41,7 @@ msgstr ""
 "\n"
 "Çakışmaları önlemek için lütfen bu eklentilerden birini kaldırın."
 
-#: addon/globalPlugins/setDescriptionDelay.py:94
+#: addon/globalPlugins/setDescriptionDelay.py:103
 #, python-brace-format
 msgid ""
 "Warning: the add-on {conflicting} is also installed and conflicts with "
@@ -50,11 +50,11 @@ msgstr ""
 "Uyarı: {conflicting} eklentisi de yüklü ve setDescriptionDelay ile "
 "çakışıyor. Lütfen bunlardan birini kaldırın."
 
-#: addon/globalPlugins/setDescriptionDelay.py:219
+#: addon/globalPlugins/setDescriptionDelay.py:259
 msgid "Description delay (ms, 0=instant):"
 msgstr "Açıklama gecikmesi (ms, 0=anında):"
 
-#: addon/globalPlugins/setDescriptionDelay.py:226
+#: addon/globalPlugins/setDescriptionDelay.py:266
 msgid ""
 "Number of milliseconds to wait before announcing the character description. "
 "Set to 0 to announce the description immediately instead of the character."
@@ -88,7 +88,30 @@ msgstr ""
 #: buildVars.py:28
 msgid ""
 "\n"
-"Initial release.\n"
+"Fixed: Character descriptions no longer bleed into subsequent speech after "
+"switching away from character-by-character navigation. Previously, if you "
+"moved to a different object or application while a description was pending, "
+"the description would still be announced after the new object's name. This "
+"happened because NVDA cancels speech internally via SpeechManager.cancel() "
+"rather than speech.cancelSpeech() during focus and object navigation events, "
+"bypassing the add-on's timer cancellation entirely. The fix patches "
+"SpeechManager.cancel() directly and adds a generation counter so that any "
+"callback already queued in the wx event loop when cancellation occurs is "
+"silently discarded.\n"
 msgstr ""
 "\n"
-"İlk sürüm.\n"
+"Düzeltildi: Karakter karakter gezinmeden başka bir nesneye veya uygulamaya "
+"geçildiğinde, bekleyen karakter açıklaması artık yeni nesnenin adından sonra "
+"okunmuyor. Sorunun nedeni şuydu: NVDA, odak ve nesne navigasyonu sırasında "
+"konuşmayı speech.cancelSpeech() yerine doğrudan SpeechManager.cancel() "
+"üzerinden iptal ediyordu; bu da eklentinin zamanlayıcı iptali mekanizmasını "
+"tamamen atlıyordu. Düzeltme kapsamında SpeechManager.cancel() de yamalandı "
+"ve bir nesil sayacı eklendi; böylece iptal gerçekleştiğinde wx olay "
+"kuyruğuna zaten girmiş olan geri çağrımlar sessizce görmezden geliniyor.\n"
+
+#~ msgid ""
+#~ "\n"
+#~ "Initial release.\n"
+#~ msgstr ""
+#~ "\n"
+#~ "İlk sürüm.\n"
